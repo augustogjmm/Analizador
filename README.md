@@ -6,9 +6,18 @@
 
 ---
 
-# Liquidity Lab V6
+## Qué es Liquidity Lab V6
 
 Aplicación local para transformar datos públicos de Binance en un plan operativo explicable. No envía órdenes, no requiere API key y no usa datos pagos de CoinGlass.
+
+## Arquitectura resumida
+
+- Aplicación web con **React, TypeScript y herramientas del ecosistema Next.js**.
+- Endpoints internos para análisis, escáner, historial y consulta de activos.
+- Integración con APIs públicas de mercado, validación de datos y simulación sin enviar órdenes reales.
+- Persistencia local y componentes de base estructurada según disponibilidad; las limitaciones están documentadas a continuación.
+
+Este repositorio es un prototipo de investigación y no acredita por sí mismo estabilidad, seguridad o rendimiento de un producto de producción.
 
 ## Inicio rápido en Windows
 
