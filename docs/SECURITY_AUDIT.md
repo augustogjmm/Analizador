@@ -30,3 +30,18 @@ Los archivos retirados del árbol actual pueden seguir descargándose desde comm
 - No se comprobó un despliegue productivo de la aplicación Liquidity Lab.
 
 **Estado:** árbol actual limpiado; historial histórico sin sanear; controles de CI y mantenimiento añadidos. No declarar la auditoría de seguridad como cerrada.
+
+## Actualización de dependencias y verificación (18/11/2026)
+
+- Se integraron los PR de mantenimiento y seguridad **#4** (fast-uri), **#5** (Next.js), **#6** (minimatch/typescript-eslint), **#8** (plugin RSC), **#9** (React/React DOM/React Server DOM/Vinext/Satori) y **#10** (Vite).
+- Los cambios #8 y #9 se probaron en ramas aisladas para resolver conflictos reales de *peer dependencies* sin recurrir a `--force` ni `--legacy-peer-deps`.
+- Los PR originales #1, #2, #3 y #7 quedaron cerrados o sustituidos por las integraciones validadas. En la comprobación final del 18/11/2026 no quedaron PR abiertos.
+- La versión `main` revisada en ese momento es `f6ceca0967783aebd4c4b805508e3d312973170e`. Sus workflows **Liquidity Lab quality checks** y **Production build verification** finalizaron con éxito.
+- El procedimiento temporal usado para regenerar el lockfile de las ramas de prueba se retiró antes de mergear; no se incorporaron workflows temporales con permisos de escritura al branch principal.
+
+### Importante: respaldos históricos anteriores a estas integraciones
+
+El respaldo integral local construido antes de los merges fue válido para su momento de creación, **pero ya no es una copia del `main` actual**. No utilizar los scripts V4 previos ni cualquier `-Apply` antiguo contra la nueva rama sin regenerar primero el mirror/bundle, las referencias y un ensayo del historial completo.
+
+Estos cambios actualizan dependencias y pruebas, pero **no eliminan el historial antiguo de `.npm-cache/` y `.vite/`**, ni certifican funcionamiento productivo, ni sustituyen revisión de seguridad de todos los objetos Git.
+
