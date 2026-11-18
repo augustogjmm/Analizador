@@ -8,10 +8,11 @@ const FUTURES = 'https://fapi.binance.com';
 const BYBIT = 'https://api.bybit.com';
 const allowedTimeframes = new Set(['15m', '1h', '4h', '1d']);
 
-async function binanceJson(url: string) {
+// Endpoint-specific TypeScript contracts document the expected payloads; providers still require runtime verification.
+async function binanceJson<T>(url: string): Promise<T> {
   const response = await fetch(url, { headers: { Accept: 'application/json' }, cache: 'no-store', signal: AbortSignal.timeout(12000) });
   if (!response.ok) throw new Error(`Binance respondió ${response.status}`);
-  return response.json();
+  return response.json() as Promise<T>;
 }
 
 function bookImbalance(bids: unknown[][], asks: unknown[][], limit = 200) {
@@ -33,20 +34,20 @@ export async function GET(request: NextRequest) {
 
   try {
     const [ticker, depth, trades, ...klines] = await Promise.all([
-      binanceJson(`${SPOT}/api/v3/ticker/24hr?symbol=${symbol}`),
-      binanceJson(`${SPOT}/api/v3/depth?symbol=${symbol}&limit=5000`),
-      binanceJson(`${SPOT}/api/v3/aggTrades?symbol=${symbol}&limit=1000`),
-      ...['15m', '1h', '4h', '1d'].map((interval) => binanceJson(`${SPOT}/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=260`)),
-      binanceJson(`${SPOT}/api/v3/klines?symbol=BTCUSDT&interval=4h&limit=120`),
+      binanceJson<{ lastPrice: string; priceChangePercent: string }>(`${SPOT}/api/v3/ticker/24hr?symbol=${symbol}`),
+      binanceJson<{ bids: unknown[][]; asks: unknown[][] }>(`${SPOT}/api/v3/depth?symbol=${symbol}&limit=5000`),
+      binanceJson<Array<{ p: string; q: string; m: boolean }>>(`${SPOT}/api/v3/aggTrades?symbol=${symbol}&limit=1000`),
+      ...['15m', '1h', '4h', '1d'].map((interval) => binanceJson<unknown[][]>(`${SPOT}/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=260`)),
+      binanceJson<unknown[][]>(`${SPOT}/api/v3/klines?symbol=BTCUSDT&interval=4h&limit=120`),
     ]);
 
     const derivatives = await Promise.allSettled([
-      binanceJson(`${FUTURES}/fapi/v1/openInterest?symbol=${symbol}`),
-      binanceJson(`${FUTURES}/futures/data/openInterestHist?symbol=${symbol}&period=5m&limit=30`),
-      binanceJson(`${FUTURES}/fapi/v1/premiumIndex?symbol=${symbol}`),
-      binanceJson(`${FUTURES}/fapi/v1/depth?symbol=${symbol}&limit=1000`),
-      binanceJson(`${BYBIT}/v5/market/orderbook?category=spot&symbol=${symbol}&limit=1000`),
-      binanceJson(`${BYBIT}/v5/market/tickers?category=spot&symbol=${symbol}`),
+      binanceJson<{ openInterest: string }>(`${FUTURES}/fapi/v1/openInterest?symbol=${symbol}`),
+      binanceJson<Array<{ sumOpenInterest: string }>>(`${FUTURES}/futures/data/openInterestHist?symbol=${symbol}&period=5m&limit=30`),
+      binanceJson<{ lastFundingRate: string; markPrice: string; indexPrice: string }>(`${FUTURES}/fapi/v1/premiumIndex?symbol=${symbol}`),
+      binanceJson<{ bids: unknown[][]; asks: unknown[][] }>(`${FUTURES}/fapi/v1/depth?symbol=${symbol}&limit=1000`),
+      binanceJson<{ result?: { b?: unknown[][]; a?: unknown[][] } }>(`${BYBIT}/v5/market/orderbook?category=spot&symbol=${symbol}&limit=1000`),
+      binanceJson<{ result?: { list?: Array<{ lastPrice?: string }> } }>(`${BYBIT}/v5/market/tickers?category=spot&symbol=${symbol}`),
     ]);
     const spot = Number(ticker.lastPrice);
     const intervals = ['15m', '1h', '4h', '1d'];
