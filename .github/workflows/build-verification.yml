@@ -1,0 +1,38 @@
+name: Production build verification
+on:
+  pull_request:
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'app/**'
+      - 'lib/**'
+      - 'next.config.ts'
+      - 'vite.config.ts'
+      - '.github/workflows/build-verification.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'app/**'
+      - 'lib/**'
+      - 'next.config.ts'
+      - 'vite.config.ts'
+      - '.github/workflows/build-verification.yml'
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Compile production bundle
+        run: npm run build
+      # Build-time validity does not certify live exchange responses or forecast accuracy.
