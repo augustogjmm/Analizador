@@ -1,3 +1,11 @@
+# Liquidity Lab — Investigación, integración y validación
+
+> **Proyecto personal en desarrollo:** integración de datos financieros, análisis reproducible, diseño de interfaz web y persistencia. Este repositorio no representa una plataforma bancaria de producción ni garantiza resultados financieros. El estado real de las funcionalidades y sus límites se documentan a continuación.
+
+**[Portfolio ejecutivo](https://github.com/augustogjmm/Radar/blob/main/PORTFOLIO.md)**
+
+---
+
 # Liquidity Lab V6
 
 Aplicación local para transformar datos públicos de Binance en un plan operativo explicable. No envía órdenes, no requiere API key y no usa datos pagos de CoinGlass.
