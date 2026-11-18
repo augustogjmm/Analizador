@@ -5,6 +5,7 @@ on:
     paths:
       - 'app/**'
       - 'lib/**'
+      - 'tests/**'
       - 'db/**'
       - 'package.json'
       - 'package-lock.json'
@@ -14,6 +15,7 @@ on:
     paths:
       - 'app/**'
       - 'lib/**'
+      - 'tests/**'
       - 'db/**'
       - 'package.json'
       - 'package-lock.json'
@@ -37,4 +39,6 @@ jobs:
         run: npm run lint
       - name: TypeScript typecheck
         run: npx tsc --noEmit --pretty false
+      - name: Indicator unit tests
+        run: npm test
       # Unit tests and live deployment validation are separate responsibilities.
