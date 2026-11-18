@@ -88,7 +88,7 @@ export default function Home() {
   const [nextRefresh, setNextRefresh] = useState(30);
 
   useEffect(() => {
-    fetch('/api/symbols').then((response) => response.ok ? response.json() : Promise.reject()).then((result) => {
+    fetch('/api/symbols').then((response) => response.ok ? (response.json() as Promise<{ symbols?: Array<{ symbol: string }> }>) : Promise.reject()).then((result) => {
       const loaded = result.symbols?.map((item: { symbol: string }) => item.symbol);
       if (loaded?.length) setAvailableSymbols(loaded);
     }).catch(() => setAvailableSymbols(defaultSymbols));
@@ -129,18 +129,18 @@ export default function Home() {
     setError('');
     try {
       const response = await fetch(`/api/analyze?symbol=${symbol}&capital=${capital}&allocations=${allocations.join(',')}&timeframe=${chartFrame}&_=${Date.now()}`, { cache: 'no-store' });
-      const result = await response.json();
+      const result = await response.json() as (AnalysisResult & { error?: string });
       if (!response.ok) throw new Error(result.error || 'No se pudo analizar el mercado.');
       setData(result);
       void persistRecord('snapshot', { id: `${result.symbol}-${result.executionTimeframe}-${result.timestamp}`, symbol: result.symbol, timeframe: result.executionTimeframe, timestamp: result.timestamp, spotPrice: result.spotPrice, direction: result.direction, probability: result.probability, target: result.target, invalidation: result.invalidation, riskReward: result.riskReward, regime: result.regime.label, confirmation: result.confirmation.status, orderFlowDelta: result.orderFlow.deltaPct, openInterest: result.derivatives.openInterest, funding: result.derivatives.fundingRate, scenarios: result.forecast.scenarios, entries: result.entries.map((entry: AnalysisResult['entries'][number]) => ({ name: entry.name, price: entry.price, averageAfter: entry.averageAfter })) });
-      void fetch(`/api/history?symbol=${result.symbol}`, { cache: 'no-store' }).then((historyResponse) => historyResponse.json()).then((history) => {
+      void fetch(`/api/history?symbol=${result.symbol}`, { cache: 'no-store' }).then((historyResponse) => historyResponse.json() as Promise<{ available?: boolean; snapshots?: number; firstAt?: string | null; lastAt?: string | null; plans?: TrackedPlan[] }>).then((history) => {
         setHistoryStatus({ available: Boolean(history.available), snapshots: Number(history.snapshots || 0), firstAt: history.firstAt || null, lastAt: history.lastAt || null });
         if (Array.isArray(history.plans) && history.plans.length) { setJournal(history.plans); localStorage.setItem('liquidity-lab-journal-v4', JSON.stringify(history.plans)); }
       }).catch(() => undefined);
       const labKey = `${result.symbol}-${result.executionTimeframe}`;
       if (labLastKeyRef.current !== labKey || Date.now() - labLastLoadedRef.current > 300_000) {
         labLastKeyRef.current = labKey; labLastLoadedRef.current = Date.now(); setLabLoading(true);
-        void fetch(`/api/lab?symbol=${result.symbol}&timeframe=${result.executionTimeframe}`, { cache: 'no-store' }).then((labResponse) => labResponse.json()).then((lab) => setLabResult(lab)).catch(() => undefined).finally(() => setLabLoading(false));
+        void fetch(`/api/lab?symbol=${result.symbol}&timeframe=${result.executionTimeframe}`, { cache: 'no-store' }).then((labResponse) => labResponse.json() as Promise<LabResult>).then((lab) => setLabResult(lab)).catch(() => undefined).finally(() => setLabLoading(false));
       }
       setNextRefresh(30);
       setWallHistory((current) => {
@@ -263,7 +263,7 @@ export default function Home() {
   const loadScanner = async () => {
     setScannerLoading(true);
     try {
-      const response = await fetch('/api/scanner', { cache: 'no-store' }); const result = await response.json();
+      const response = await fetch('/api/scanner', { cache: 'no-store' }); const result = await response.json() as { opportunities?: ScannerRow[]; error?: string };
       if (!response.ok) throw new Error(result.error || 'No se pudo cargar el radar.');
       setScannerRows(result.opportunities || []);
     } catch (caught) { setError(caught instanceof Error ? caught.message : 'No se pudo cargar el radar.'); }
@@ -275,7 +275,7 @@ export default function Home() {
   };
   const refreshLab = async () => {
     setLabLoading(true);
-    try { const response = await fetch(`/api/lab?symbol=${symbol}&timeframe=${chartFrame}`, { cache: 'no-store' }); const result = await response.json(); setLabResult(result); labLastLoadedRef.current = Date.now(); labLastKeyRef.current = `${symbol}-${chartFrame}`; }
+    try { const response = await fetch(`/api/lab?symbol=${symbol}&timeframe=${chartFrame}`, { cache: 'no-store' }); const result = await response.json() as LabResult; setLabResult(result); labLastLoadedRef.current = Date.now(); labLastKeyRef.current = `${symbol}-${chartFrame}`; }
     catch (caught) { setError(caught instanceof Error ? caught.message : 'No se pudo actualizar el laboratorio.'); }
     finally { setLabLoading(false); }
   };
