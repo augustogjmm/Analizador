@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
     let oiChange: number | null = null;
     if (derivatives[1].status === 'fulfilled' && Array.isArray(derivatives[1].value) && derivatives[1].value.length > 1) {
       const first = Number(derivatives[1].value[0].sumOpenInterest);
-      const latest = Number(derivatives[1].value.at(-1).sumOpenInterest);
+      const latest = Number(derivatives[1].value.at(-1)!.sumOpenInterest);
       oiChange = first ? (latest - first) / first * 100 : null;
     }
     const funding = derivatives[2].status === 'fulfilled' ? Number(derivatives[2].value.lastFundingRate) : null;
